@@ -1,5 +1,36 @@
 import './style.css';
 
+// API configuration
+const API_KEY = 'BDW8F2NFGVJ668CHM9YAFG7NC';
+const BASE_URL = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline';
+
+// Fetch weather data from Visual Crossing API
+async function fetchWeatherData(location) {
+    const url = `${BASE_URL}/${encodeURIComponent(location)}?unitGroup=metric&key=${API_KEY}&contentType=json`;
+    
+    console.log('Fetching from:', url);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Raw API data:', data);
+    
+    // Transform API data to match your display format
+    return {
+        city: data.resolvedAddress,
+        temperature: data.currentConditions.temp,
+        description: data.currentConditions.conditions,
+        humidity: data.currentConditions.humidity,
+        windSpeed: data.currentConditions.windspeed,
+        feelsLike: data.currentConditions.feelslike
+    };
+}
+
+
 //init the app 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Weather App Initialized');
@@ -40,9 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide any previous errors
         hideError();
 
-        // Show loading state (you'll need to add this to your HTML)
-        showLoading();
-
         try {
             // Fetch real weather data
             const weatherData = await fetchWeatherData(location);
@@ -51,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showError('Unable to fetch weather data. Please try again.');
             console.error('API Error:', error);
         } finally {
-            hideLoading();
+            return;
         }
     })
 
